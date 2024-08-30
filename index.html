@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Table Tennis Score Counter</title>
     <style>
-        /* Basic styling for the app */
         body {
             margin: 0;
             display: flex;
@@ -49,18 +48,20 @@
 
         .score {
             font-size: 8rem;
+            font-weight: bold;
         }
 
         .serves {
             display: flex;
+            height: 60px;
             gap: 15px;
             margin-top: -60px;
             margin-bottom: 20px;
         }
 
         .serve-ball {
-            width: 30px;
-            height: 30px;
+            width: 40px;
+            height: 40px;
             background-color: currentColor;
             border-radius: 50%;
         }
@@ -68,13 +69,21 @@
         .reset-btn {
             position: absolute;
             bottom: 20px;
-            background-color: #ff0000;
-            color: white;
+            background-color: black;
+            color: yellow;
             border: none;
             padding: 10px 20px;
             font-size: 1.5rem;
             cursor: pointer;
             border-radius: 5px;
+        }
+
+        .language-display {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 1.5rem;
+            color: black;
         }
     </style>
 </head>
@@ -84,20 +93,39 @@
     <div class="player left" id="player1">
         <div class="serves" id="serves1"></div>
         <div class="score" id="score1">0</div>
-        <!-- <div>Player 1</div> -->
     </div>
     <div class="player right" id="player2">
         <div class="serves" id="serves2"></div>
         <div class="score" id="score2">0</div>
-        <!-- <div>Player 2</div> -->
     </div>
 </div>
 <button class="reset-btn" id="resetBtn">Reset</button>
+<div class="language-display" id="languageDisplay"></div>
 
 <script>
+    const languagelist = {
+        'af': 'Afrikaans', 'an': 'Aragonese', 'bg': 'Bulgarian', 'bs': 'Bosnian',
+        'ca': 'Catalan', 'cs': 'Czech', 'cy': 'Welsh', 'da': 'Danish', 'de': 'German',
+        'el': 'Greek', 'en': 'Swinglish', 'en-gb': 'English', 'en-sc': 'English-Scottish',
+        'en-uk-north': 'English-North', 'en-uk-rp': 'English-RP', 'en-uk-wmids': 'English-WMids',
+        'en-us': 'English-US', 'en-wi': 'English-WestIndies', 'eo': 'Esperanto', 'es': 'Spanish',
+        'es-la': 'Spanish-Latin-America', 'et': 'Estonian', 'fa': 'Persian', 'fa-pin': 'Persian-Pinglish',
+        'fi': 'Finnish', 'fr-be': 'French-Belgium', 'fr-fr': 'French', 'ga': 'Irish-Gaeilge',
+        'grc': 'Greek-Ancient', 'hi': 'Hindi', 'hr': 'Croatian', 'hu': 'Hungarian',
+        'hy': 'Armenian', 'hy-west': 'Armenian-West', 'id': 'Indonesian', 'is': 'Icelandic',
+        'it': 'Italian', 'jbo': 'Lojban', 'ka': 'Georgian', 'kn': 'Kannada', 'ku': 'Kurdish',
+        'la': 'Latin', 'lfn': 'Lingua Franca Nova', 'lt': 'Lithuanian', 'lv': 'Latvian',
+        'mk': 'Macedonian', 'ml': 'Malayalam', 'ms': 'Malay', 'ne': 'Nepali', 'nl': 'Dutch',
+        'no': 'Norwegian', 'pa': 'Punjabi', 'pl': 'Polish', 'pt-br': 'Brazil', 'pt-pt': 'Portugal',
+        'ro': 'Romanian', 'ru': 'Russian', 'sk': 'Slovak', 'sq': 'Albanian', 'sr': 'Serbian',
+        'sv': 'Swedish', 'sw': 'Swahili-Test', 'ta': 'Tamil', 'tr': 'Turkish', 'vi': 'Vietnamese',
+        'vi-hue': 'Vietnamese-Hue', 'vi-sgn': 'Vietnamese-SGN', 'zh': 'Mandarin', 'zh-yue': 'Cantonese'
+    };
+
     let score1 = 0;
     let score2 = 0;
     let player1Starts = Math.random() < 0.5;
+    let serveAlternate = false;
 
     const score1Element = document.getElementById('score1');
     const score2Element = document.getElementById('score2');
@@ -106,10 +134,25 @@
     const player1Element = document.getElementById('player1');
     const player2Element = document.getElementById('player2');
     const resetBtn = document.getElementById('resetBtn');
+    const languageDisplay = document.getElementById('languageDisplay');
+
+    const randomLangCode = Object.keys(languagelist)[Math.floor(Math.random() * Object.keys(languagelist).length)];
+    const randomLanguage = languagelist[randomLangCode];
+    languageDisplay.textContent = `Language: ${randomLanguage}`;
 
     function updateScores() {
         score1Element.textContent = score1;
         score2Element.textContent = score2;
+        speak(`${score1}, ${score2}`);
+        
+        if (isMatchPoint()) {    
+            speak(`Match Point`);
+        }
+    }
+
+    function isMatchPoint() {
+        return (score1 >= 10 && score1 > score2 && score1 - score2 >= 1) ||
+               (score2 >= 10 && score2 > score1 && score2 - score1 >= 1);
     }
 
     function updateServes() {
@@ -117,8 +160,14 @@
         serves2Element.innerHTML = '';
 
         const totalPoints = score1 + score2;
-        const servesRemaining = 2 - (totalPoints % 2);
-        const servePlayer = Math.floor(totalPoints / 2) % 2 === 0 ? (player1Starts ? 1 : 2) : (player1Starts ? 2 : 1);
+        let servesRemaining = 2 - (totalPoints % 2);
+        let servePlayer = Math.floor(totalPoints / 2) % 2 === 0 ? (player1Starts ? 1 : 2) : (player1Starts ? 2 : 1);
+
+        if (score1 >= 10 && score2 >= 10) {
+            serveAlternate = true;
+            servesRemaining = 1;
+            servePlayer = (totalPoints % 2 === 0) ? (player1Starts ? 1 : 2) : (player1Starts ? 2 : 1);
+        }
 
         if (servePlayer === 1) {
             for (let i = 0; i < servesRemaining; i++) {
@@ -139,6 +188,7 @@
         score1 = 0;
         score2 = 0;
         player1Starts = !player1Starts;
+        serveAlternate = false;
 
         updateScores();
         updateServes();
@@ -155,6 +205,13 @@
         updateScores();
         updateServes();
     });
+
+    function speak(text) {
+        const msg = new SpeechSynthesisUtterance(text);
+        msg.lang = randomLangCode;
+        msg.rate = 1.1;
+        window.speechSynthesis.speak(msg);
+    }
 
     resetBtn.addEventListener('click', resetGame);
 
