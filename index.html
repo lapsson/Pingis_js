@@ -103,29 +103,23 @@
 <div class="language-display" id="languageDisplay"></div>
 
 <script>
+    // Variable declarations should be at the top
     const languagelist = {
-        'bg': 'Bulgarian',
-        'cs': 'Czech', 'da': 'Danish', 'de': 'German',
-        'el': 'Greek', 'en': 'English', 'es': 'Spanish',
-        'es-la': 'Spanish-Latin-America',
+        'bg': 'Bulgarian', 'cs': 'Czech', 'da': 'Danish', 'de': 'German',
+        'el': 'Greek', 'en': 'English', 'es': 'Spanish', 'es-la': 'Spanish-Latin-America',
         'fi': 'Finnish', 'fr-be': 'French-Belgium', 'fr-fr': 'French', 
-        'hi': 'Hindi', 'hu': 'Hungarian',
-        'id': 'Indonesian', 'it': 'Italian',
-        'ms': 'Malay', 'nl': 'Dutch',
-        'no': 'Norwegian', 'pl': 'Polish', 'pt-br': 'Portuguese-Brazil', 'pt-pt': 'Portuguese',
-        'ro': 'Romanian', 'ru': 'Russian', 'sk': 'Slovak',
-        'sv': 'Swedish', 'tr': 'Turkish',
-        'zh': 'Mandarin', 'zh-yue': 'Cantonese'
+        'hi': 'Hindi', 'hu': 'Hungarian', 'id': 'Indonesian', 'it': 'Italian',
+        'ms': 'Malay', 'nl': 'Dutch', 'no': 'Norwegian', 'pl': 'Polish',
+        'pt-br': 'Portuguese-Brazil', 'pt-pt': 'Portuguese', 'ro': 'Romanian', 'ru': 'Russian',
+        'sk': 'Slovak', 'sv': 'Swedish', 'tr': 'Turkish', 'zh': 'Mandarin', 'zh-yue': 'Cantonese'
     };
 
     let score1 = 0;
     let score2 = 0;
     let player1Starts = Math.random() < 0.5;
     let serveAlternate = false;
-    let randomLanguage;
-    let randomLangCode;
-    
-    chooseRandomLanguage(); // first choose random language
+    let randomLanguage = 'English';
+    let randomLangCode = 'en';
 
     const score1Element = document.getElementById('score1');
     const score2Element = document.getElementById('score2');
@@ -139,19 +133,24 @@
     function chooseRandomLanguage() {
         randomLangCode = Object.keys(languagelist)[Math.floor(Math.random() * Object.keys(languagelist).length)];
         randomLanguage = languagelist[randomLangCode];
+    }
+
+    function updateLanguageDisplay() {
         languageDisplay.textContent = `${randomLanguage}`;
     }
     
     function updateScores() {
         score1Element.textContent = score1;
         score2Element.textContent = score2;
-        speak(`${score1}, ${score2}`);
-        
-        if (isMatchPoint()) {    
-            speak(`Match Point`);
-        }
 
-        chooseRandomLanguage();
+        speak(`${score1}, ${score2}`, () => {
+            if (isMatchPoint()) {
+                speak('Match Point', chooseRandomLanguage);
+            } else {
+                updateLanguageDisplay();
+                chooseRandomLanguage();
+            }
+        });
     }
 
     function isMatchPoint() {
@@ -210,10 +209,17 @@
         updateServes();
     });
 
-    function speak(text) {
+    function speak(text, callback) {
         const msg = new SpeechSynthesisUtterance(text);
         msg.lang = randomLangCode;
         msg.rate = 1.1;
+
+        msg.onend = function () {
+            if (callback) {
+                callback();
+            }
+        };
+
         window.speechSynthesis.speak(msg);
     }
 
