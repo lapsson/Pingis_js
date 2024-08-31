@@ -142,12 +142,11 @@
     function updateScores() {
         score1Element.textContent = score1;
         score2Element.textContent = score2;
-
+        updateLanguageDisplay();
         speak(`${score1}, ${score2}`, () => {
             if (isMatchPoint()) {
                 speak('Match Point', chooseRandomLanguage);
             } else {
-                updateLanguageDisplay();
                 chooseRandomLanguage();
             }
         });
