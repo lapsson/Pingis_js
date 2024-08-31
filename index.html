@@ -122,6 +122,10 @@
     let score2 = 0;
     let player1Starts = Math.random() < 0.5;
     let serveAlternate = false;
+    let randomLanguage;
+    let randomLangCode;
+    
+    chooseRandomLanguage(); // first choose random language
 
     const score1Element = document.getElementById('score1');
     const score2Element = document.getElementById('score2');
@@ -132,10 +136,12 @@
     const resetBtn = document.getElementById('resetBtn');
     const languageDisplay = document.getElementById('languageDisplay');
 
-    const randomLangCode = Object.keys(languagelist)[Math.floor(Math.random() * Object.keys(languagelist).length)];
-    const randomLanguage = languagelist[randomLangCode];
-    languageDisplay.textContent = `Language: ${randomLanguage}`;
-
+    function chooseRandomLanguage() {
+        randomLangCode = Object.keys(languagelist)[Math.floor(Math.random() * Object.keys(languagelist).length)];
+        randomLanguage = languagelist[randomLangCode];
+        languageDisplay.textContent = `${randomLanguage}`;
+    }
+    
     function updateScores() {
         score1Element.textContent = score1;
         score2Element.textContent = score2;
@@ -144,6 +150,8 @@
         if (isMatchPoint()) {    
             speak(`Match Point`);
         }
+
+        chooseRandomLanguage();
     }
 
     function isMatchPoint() {
