@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pingisräknare2</title>
+    <title>Pingisräknare</title>
     <style>
         body {
             margin: 0;
@@ -145,9 +145,7 @@
         updateLanguageDisplay();
         speak(`${score1}, ${score2}`, () => {
             if (isMatchPoint()) {
-                speak('Match Point', chooseRandomLanguage);
-            } else {
-                chooseRandomLanguage();
+                speak('Match Point');
             }
         });
     }
@@ -192,6 +190,7 @@
         player1Starts = !player1Starts;
         serveAlternate = false;
 
+        chooseRandomLanguage();
         updateScores();
         updateServes();
     }
@@ -225,8 +224,10 @@
     resetBtn.addEventListener('click', resetGame);
 
     // Initialize the game
+    chooseRandomLanguage();
     updateScores();
     updateServes();
+    
 </script>
 
 </body>
